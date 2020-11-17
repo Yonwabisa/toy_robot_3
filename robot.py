@@ -9,7 +9,7 @@ class Robot():
 
     directions = ('n', 'e', 's', 'w')
 
-    def __init__(self, robo_name, x, y):
+    def __init__(self, robo_name: str, x: int, y: int):
         self.x = x
         self.y = y
         self.forward = Robot.directions[0]
@@ -17,7 +17,7 @@ class Robot():
         self.history = []
 
 
-    def set_robot_pos(self, new_x, new_y):
+    def set_robot_pos(self, new_x: int, new_y: int):
         self.x = new_x
         self.y = new_y
 
@@ -25,7 +25,7 @@ class Robot():
     def reset_robot(self):
         self.__init__(self.robo_name, 0, 0)
 
-    def add_if_safe(self, current_pos, dist_to_go, _range):
+    def add_if_safe(self, current_pos: int, dist_to_go: int, _range: int) -> int:
         '''
         returns the second expression to a two-expression addition
         sum depending on whether the sum as a coordinate is within
@@ -38,7 +38,7 @@ class Robot():
         return dist_to_go
 
 
-    def subtract_if_safe(self, current_pos, dist_to_go, _range):
+    def subtract_if_safe(self, current_pos: int, dist_to_go: int, _range: int) -> int:
         '''
         returns the second expression to a two-expression 
         subtraction sum depending on whether the sum
@@ -52,7 +52,7 @@ class Robot():
         return dist_to_go
 
 
-    def move_forward(self, distance):
+    def move_forward(self, distance: int) -> list:
 
         old_y = self.y
         old_x = self.x
@@ -71,7 +71,7 @@ class Robot():
         return [self.x,self.y]
 
 
-    def move_back(self, distance):
+    def move_back(self, distance: int) -> list:
 
         old_y = self.y
         old_x = self.x
@@ -90,7 +90,7 @@ class Robot():
         return [self.x,self.y]
 
 
-    def turn_right(self):
+    def turn_right(self) -> str:
         if self.forward == 'n':
             self.forward = 'e'
         elif self.forward == 'e':
@@ -103,7 +103,7 @@ class Robot():
         return(f" > {self.robo_name} turned right.")
 
 
-    def turn_left(self):
+    def turn_left(self) -> str:
         if self.forward == 'n':
             self.forward = 'w'
         elif self.forward == 'e':
@@ -116,17 +116,17 @@ class Robot():
         return(f" > {self.robo_name} turned left.")
 
 
-    def sprint(self, dist):
+    def sprint(self, dist: int):
         if dist == 0:
             return dist
         self.move_forward(dist)
         return self.sprint(dist - 1)
 
 
-    def set_hist(self, command, quantifier):
+    def set_hist(self, command: str, quantifier: int):
         self.history.append((command, quantifier))
 
-    def get_hist_len(self):
+    def get_hist_len(self) -> int:
         return len(self.history)
 
     def filter_replay_text(self):
@@ -140,7 +140,6 @@ class Robot():
         moves = Robot.filter_replay_text(self)
         moves = [str(move[0])+' '+str(move[1]) for move in moves]
         return [commands.strip() for commands in moves]
-        #return '\n'.join(moves)
 
 
     def get_robo_location(self):
@@ -160,34 +159,32 @@ def set_name() -> str:
     return name
 
 
-def get_command(robot, list_of_commands) -> list:
+def get_command(robot, list_of_commands: list) -> (list, bool):
 
-    '''
-    Prompts for input, returns list and boolean
-    '''
+    """
+    [Prompts the user for input, and converts it into a string]
+
+    Returns:
+        [list]: [Input from the user as a list]
+        [bool]: [
+            A True or False value to determine if the retruned list should
+            be used or not
+            ]
+    """
     complain = False
     go_on = True
     cmd = input(f'{robot.robo_name}: What must I do next? ')
     lst_cmd = (cmd.casefold()).split()
     if lst_cmd[0] == 'replay':
-        ##NEED  A LIST OF WORDS#######
-        # word_args = [arg for arg in lst_cmd[1:] if arg.isalpha()]
         word_args = [arg for arg in lst_cmd[1:] if not arg.isdigit()]
+        #impurities are anything other than digits and the words "silent" and "reversed"
         impurities = set(word_args).difference({'reversed', 'silent'})
+        #pattern to match '-' seperated digits. e.g 2-42
         pattern = re.compile(r'\b\d{1,YZ}\-\d{1,YZ}\b'.replace('YZ', str(robot.get_hist_len())))
         temp_list = re.findall(pattern, ' '.join(impurities))
-        impurities = impurities.difference(set(temp_list))
-        #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>IMPORTANT STUFF<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        # for val in lst_cmd:
-        #     if val.isdigit():
-        #         val += 1
-        #Decrements all standalone integers
+        impurities.difference_update(set(temp_list))
+        #decrements every positive integer by one in lst_cmd
         lst_cmd = [(str(int(val) - 1) if val.isdigit() else val) for val in lst_cmd]
-        #NOW I just need code to change range values... maybe idk
-        # lst_cmd = [[(str(int(char) - 1) if char.isdigit() else char) for char in val] for val in lst_cmd]
-        # lst_cmd = [''.join(value) for value in lst_cmd]
-        # print(f'This is your list:\n{lst_cmd}')
-        #if impurities are present, print I DO NOT UNDERSTAND
         if not (len(impurities) == 0):
             complain = True
     elif lst_cmd[0] in list_of_commands:
@@ -210,15 +207,13 @@ def set_help(commands, command=None, message=None, cmd_dict={}) -> dict:
     '''
 
     ''' populate dictionary if it's empty'''
-    # if (not len(cmd_dict)) or (not cmd_dict):       #True == 1 and False == 0 so if len == 0 then : if (not False) ->if True... Condition for empty dict
     if not cmd_dict:
         help_dict = {}.fromkeys(commands)         #overwrites all values
     else:           #if cmd_dict is not empty
         help_dict = cmd_dict.copy()
-        for key in commands:
-            if not (key in cmd_dict):       #if command[member] is not a key in cmd_dict() then help_dict[member] is created
-            # If message arg is given, use it, else, do this:
-                help_dict[key] = None
+        for cmd in commands:
+            if not (cmd in cmd_dict):       #if command[member] is not in cmd_dict() then help_dict[member] is created
+                help_dict[cmd] = None
 
     if (type(command) != None and type(message) != None):
     # if command and message:
@@ -226,7 +221,7 @@ def set_help(commands, command=None, message=None, cmd_dict={}) -> dict:
     return help_dict
 
 
-def show_help(help_dict) -> str:
+def show_help(help_dict: dict) -> str:
     '''
     Returns information on available commans and
     their descriptions
@@ -287,7 +282,7 @@ def replay(*args, **kwargs):
     cmd_num = kwargs.get('cmd_num')
 
 
-    def play(commands, cmd_range=cmd_range):
+    def play(commands: list, cmd_range=cmd_range) -> int:
 
         '''
         cmd_range comes in as a tuple of two integers,
@@ -341,7 +336,7 @@ def replay(*args, **kwargs):
         print(f" > {bot.robo_name} replayed {i_played} commands.")
 
 
-def exec_cmd(command, robot, replay=False):
+def exec_cmd(command: list, robot: object, replay=False):
     '''
     calls the function passed as a parameter
     and adds it to the command history, if replay mode if False
